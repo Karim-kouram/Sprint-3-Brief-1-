@@ -6,17 +6,19 @@
 // Une carte GitHub Projects et au moins un commit par fonctionnalité.
 
 
-
+import { chargerPokemon, creatures } from "./data.js";
 
 // -------------------------------------------------------------
-// 1. AFFICHAGE
+// 1. afficherPokemon
 // Supprimez les cartes écrites à la main dans index.html et
 // construisez la grille à partir du tableau `creatures`.
 // -------------------------------------------------------------
-import { creatures } from "./data.js";
+
 
 let section = document.getElementById("grid");
-const AFFICHAGE = (Tableau) =>{
+export function afficherPokemon(Tableau) {
+
+    section.innerHTML = "";
     Tableau.forEach((pokemon) => {
         const article = document.createElement("article");
 
@@ -65,9 +67,17 @@ const typeColor = typeColors[pokemon.type] || "bg-gray-200 text-black";
 
     })
 }
-AFFICHAGE(creatures);
+chargerPokemon(21, 0);
 
+const loadButton = document.getElementById("loadButton");
+loadButton.addEventListener("click", function(){
+    const limit = 21;
+    const skip = document.querySelectorAll('article').length;
 
+    if (!skip) return;
+    console.log(skip);
+    chargerPokemon(limit, skip);
+})
 // -------------------------------------------------------------
 // 2. DÉTAIL
 // Un clic sur une carte ouvre le panneau de détail :
@@ -245,12 +255,7 @@ Section.addEventListener("click", function(e) {
    AfficherEquipe(pokemon);
    updateTeamButtons();
 
-    // تحديث حالة الزر
-    const newCount = document.querySelectorAll("#team article").length;
-
-    if (newCount >= 6) {
-        button.disabled = true;
-    }
+   
 
 });
 
@@ -265,10 +270,11 @@ let searchNom = document.getElementById("search");
 searchNom.addEventListener("input", function(){
     let newTableau = creatures.filter((pokemon) => pokemon.name.toLowerCase().includes(searchNom.value.toLowerCase()));
     section.innerHTML = "";
-    AFFICHAGE(newTableau);
+    afficherPokemon(newTableau);
 })
 
 let filterType = document.getElementById("filters");
+filterType.querySelector(".chip").classList.add("Active");
 filterType.addEventListener("click", function(e) {
     const button = e.target.closest(".chip");
     filterType.querySelectorAll("button[type='button']").forEach(a => {
@@ -279,14 +285,14 @@ filterType.addEventListener("click", function(e) {
     const type = button.textContent.toLowerCase();
     if (type == "tous") {
         section.innerHTML = "";
-        AFFICHAGE(creatures) 
+        afficherPokemon(creatures) 
         button.classList.add("Active");
         return;
 
     }
     let newTableau = creatures.filter((pokemon) => pokemon.type.toLowerCase() == type);
     section.innerHTML = "";
-    AFFICHAGE(newTableau);
+    afficherPokemon(newTableau);
     button.classList.add("Active");
 
 });
@@ -450,53 +456,7 @@ form.addEventListener("submit", function(e) {
         description: description.value
     });
 
-    const article = document.createElement("article");
-
-    article.dataset.id = id.value;
-    article.className = "card flex flex-col gap-3 rounded-card bg-white p-3 pb-4 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg";
-    
-    const typeColors = {
-    fire: "bg-red-500 text-white",
-    water: "bg-blue-500 text-white",
-    grass: "bg-green-500 text-white",
-    electric: "bg-yellow-400 text-black",
-    ice: "bg-cyan-300 text-black",
-    dark: "bg-gray-800 text-white",
-    poison: "bg-purple-500 text-white",
-    flying: "bg-sky-300 text-black",
-    bug: "bg-lime-500 text-black",
-    normal: "bg-stone-400 text-black",
-    fighting: "bg-orange-600 text-white",
-    psychic: "bg-pink-500 text-white",
-    ground: "bg-amber-600 text-white",
-    rock: "bg-yellow-700 text-white",
-    ghost: "bg-violet-800 text-white",
-    dragon: "bg-indigo-600 text-white",
-    steel: "bg-slate-400 text-black",
-    fairy: "bg-pink-300 text-black"
-};
-
-const typeColor = typeColors[type.value] || "bg-gray-200 text-black";
-
-    article.innerHTML = `
-        <div class="relative flex h-36 items-center justify-center rounded-xl bg-brand-light">
-            <img src="${image.value}" alt="${name.value}" class="h-[150px] w-[150px] object-contain">
-            <span class="absolute left-3 top-2 font-mono text-sm text-muted">${id.value}</span>
-        </div>
-
-        <div class="flex items-center justify-between gap-2">
-            <h3 class="font-display text-xl font-semibold">${name.value}</h3>
-            <span class="rounded-full px-3 py-1 text-sm font-bold ${typeColor}">${type.value}</span>
-        </div>
-
-        <p class="text-sm text-muted">${level.value} · Total 309</p>
-
-        <button type="button" class="btn-add-team btn-outline hover:bg-yellow-400 hover:text-black hover:border-red-600  hover:shadow-lg transition-all duration-300">
-                Ajouter à l'équipe
-            </button>
-    `;
-
-    section.append(article);
+    afficherPokemon(creatures);
 
     form.reset();
     button.disabled = true;
