@@ -16,34 +16,55 @@
 //
 // Pensez à citer la source de vos images dans le README.
 
+import { afficherPokemon } from "./script.js"
+
 export const creatures = [];
 
-const response = await fetch(
-  "https://pokeapi.co/api/v2/pokemon?limit=21"
-);
 
-const data = await response.json();
+export async function chargerPokemon(limit, skip) {
+  try {
+    const response = await fetch(
+      `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${skip}`
+    );
 
-for (const pokemon of data.results) {
-  const res = await fetch(pokemon.url);
-  const details = await res.json();
+    const data = await response.json();
+    
+    
+    const promises = data.results.map(async (pokemon) => {
+      const res = await fetch(pokemon.url);
+      const details = await res.json();
+      //console.log(details)
 
-  creatures.push({
-    id: `#${String(details.id).padStart(3, "0")}`,
-    name: details.name,
-    type: details.types[0].type.name,
-    level: "Base",
+      return {
+        id: `#${String(details.id).padStart(3, "0")}`,
+        name: details.name,
+        type: details.types[0].type.name,
+        level: "Base",
 
-    stats: {
-      hp: details.stats[0].base_stat,
-      attack: details.stats[1].base_stat,
-      defence: details.stats[2].base_stat
-    },
+        stats: {
+          hp: details.stats[0].base_stat,
+          attack: details.stats[1].base_stat,
+          defence: details.stats[2].base_stat
+        },
 
-    image: `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${String(details.id).padStart(3, "0")}.png`,
+        image: `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${String(details.id).padStart(3, "0")}.png`,
 
-    description: `Pokémon ${details.name}`
-  });
+        description: `Pokémon ${details.name}`
+      };
+    });
+
+    const results = await Promise.all(promises);
+
+    creatures.push(...results);
+
+    afficherPokemon(creatures);
+
+    const creature_count = document.querySelectorAll('article').length;
+    document.getElementById("creature-count").textContent = creature_count;
+
+  } catch (error) {
+    console.log("Erreur lors du chargement :", error);
+  }
 }
 
 
