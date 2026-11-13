@@ -6,8 +6,11 @@
 // Une carte GitHub Projects et au moins un commit par fonctionnalité.
 
 
-import { chargerPokemon, creatures } from "./data.js";
+import { chargerPokemon } from "./services/api.js"; 
+import { getCreature } from "./services/api.js"; 
 
+import { initialcreatures } from "./main.js"; 
+import { creatures } from "./main.js"; 
 // -------------------------------------------------------------
 // 1. afficherPokemon
 // Supprimez les cartes écrites à la main dans index.html et
@@ -22,34 +25,34 @@ export function afficherPokemon(Tableau) {
     Tableau.forEach((pokemon) => {
         const article = document.createElement("article");
 
-    article.dataset.id = pokemon.id;
-    article.className = "card flex flex-col gap-3 rounded-card bg-white p-3 pb-4 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg";
+        article.dataset.id = pokemon.id;
+        article.className = "card h-[300px] flex flex-col gap-3 rounded-card bg-white p-3 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg";
 
-    const typeColors = {
-    fire: "bg-red-500 text-white",
-    water: "bg-blue-500 text-white",
-    grass: "bg-green-500 text-white",
-    electric: "bg-yellow-400 text-black",
-    ice: "bg-cyan-300 text-black",
-    dark: "bg-gray-800 text-white",
-    poison: "bg-purple-500 text-white",
-    flying: "bg-sky-300 text-black",
-    bug: "bg-lime-500 text-black",
-    normal: "bg-stone-400 text-black",
-    fighting: "bg-orange-600 text-white",
-    psychic: "bg-pink-500 text-white",
-    ground: "bg-amber-600 text-white",
-    rock: "bg-yellow-700 text-white",
-    ghost: "bg-violet-800 text-white",
-    dragon: "bg-indigo-600 text-white",
-    steel: "bg-slate-400 text-black",
-    fairy: "bg-pink-300 text-black"
-};
+        const typeColors = {
+            fire: "bg-red-500 text-white",
+            water: "bg-blue-500 text-white",
+            grass: "bg-green-500 text-white",
+            electric: "bg-yellow-400 text-black",
+            ice: "bg-cyan-300 text-black",
+            dark: "bg-gray-800 text-white",
+            poison: "bg-purple-500 text-white",
+            flying: "bg-sky-300 text-black",
+            bug: "bg-lime-500 text-black",
+            normal: "bg-stone-400 text-black",
+            fighting: "bg-orange-600 text-white",
+            psychic: "bg-pink-500 text-white",
+            ground: "bg-amber-600 text-white",
+            rock: "bg-yellow-700 text-white",
+            ghost: "bg-violet-800 text-white",
+            dragon: "bg-indigo-600 text-white",
+            steel: "bg-slate-400 text-black",
+            fairy: "bg-pink-300 text-black"
+        };
 
-const typeColor = typeColors[pokemon.type] || "bg-gray-200 text-black";
+        const typeColor = typeColors[pokemon.type] || "bg-gray-200 text-black";
 
 
-    article.innerHTML = `
+        article.innerHTML = `
     <div class="relative flex h-36 items-center justify-center rounded-xl bg-brand-light">
             <img src="${pokemon.image}" alt="logo" class="h-[150px] w-[150px] text-muted">
             <span class="absolute left-3 top-2 font-mono text-sm text-muted">${pokemon.id}</span>
@@ -58,25 +61,36 @@ const typeColor = typeColors[pokemon.type] || "bg-gray-200 text-black";
             <h3 class="font-display text-xl font-semibold">${pokemon.name}</h3>
             <span class="rounded-full px-3 py-1 text-sm font-bold ${typeColor}">${pokemon.type}</span>
           </div>
-          <p class="text-sm text-muted">${pokemon.level} · Total 309</p>
+          <p class="relative text-sm text-muted">${pokemon.level} · Total 309 <span class="absolute right-3 "><i class="fa-regular fa-heart"></i></span></p>
             <button type="button" class="btn-add-team btn-outline hover:bg-yellow-400 hover:text-black hover:border-red-600  hover:shadow-lg transition-all duration-300">
                 Ajouter à l'équipe
             </button>`;
 
-    section.append(article);
+        section.append(article);
 
     })
+
+    const creature_count = document.querySelectorAll('article').length;
+    document.getElementById("creature-count").textContent = creature_count;
+
 }
-chargerPokemon(21, 0);
+
+
 
 const loadButton = document.getElementById("loadButton");
-loadButton.addEventListener("click", function(){
+loadButton.addEventListener("click", async function () {
     const limit = 21;
-    const skip = document.querySelectorAll('article').length;
+    const skip = creatures.length;
 
     if (!skip) return;
-    console.log(skip);
-    chargerPokemon(limit, skip);
+
+    const newCreatures = await chargerPokemon(limit, skip);
+
+    creatures = [...creatures, ...newCreatures];
+
+    afficherPokemon(creatures);
+    updateTeamButtons();
+
 })
 // -------------------------------------------------------------
 // 2. DÉTAIL
@@ -100,27 +114,27 @@ Section.innerHTML = `
 function afficherDetail(pokemon) {
 
     const typeColors = {
-    fire: "bg-red-500 text-white",
-    water: "bg-blue-500 text-white",
-    grass: "bg-green-500 text-white",
-    electric: "bg-yellow-400 text-black",
-    ice: "bg-cyan-300 text-black",
-    dark: "bg-gray-800 text-white",
-    poison: "bg-purple-500 text-white",
-    flying: "bg-sky-300 text-black",
-    bug: "bg-lime-500 text-black",
-    normal: "bg-stone-400 text-black",
-    fighting: "bg-orange-600 text-white",
-    psychic: "bg-pink-500 text-white",
-    ground: "bg-amber-600 text-white",
-    rock: "bg-yellow-700 text-white",
-    ghost: "bg-violet-800 text-white",
-    dragon: "bg-indigo-600 text-white",
-    steel: "bg-slate-400 text-black",
-    fairy: "bg-pink-300 text-black"
-};
+        fire: "bg-red-500 text-white",
+        water: "bg-blue-500 text-white",
+        grass: "bg-green-500 text-white",
+        electric: "bg-yellow-400 text-black",
+        ice: "bg-cyan-300 text-black",
+        dark: "bg-gray-800 text-white",
+        poison: "bg-purple-500 text-white",
+        flying: "bg-sky-300 text-black",
+        bug: "bg-lime-500 text-black",
+        normal: "bg-stone-400 text-black",
+        fighting: "bg-orange-600 text-white",
+        psychic: "bg-pink-500 text-white",
+        ground: "bg-amber-600 text-white",
+        rock: "bg-yellow-700 text-white",
+        ghost: "bg-violet-800 text-white",
+        dragon: "bg-indigo-600 text-white",
+        steel: "bg-slate-400 text-black",
+        fairy: "bg-pink-300 text-black"
+    };
 
-const typeColor = typeColors[pokemon.type] || "bg-gray-200 text-black";
+    const typeColor = typeColors[pokemon.type] || "bg-gray-200 text-black";
 
     Section.innerHTML = `
     <article data-id="${pokemon.id}" class="card"> 
@@ -191,8 +205,10 @@ function fermerDetail() {
 }
 
 // Événement sur les cards : anciennes et nouvelles
-cardsSection.addEventListener("click", function(e) {
+cardsSection.addEventListener("click", function (e) {
     const card = e.target.closest(".card");
+
+    const fa_heart = e.target.closest(".fa-heart");
 
     if (!card || !cardsSection.contains(card)) return;
 
@@ -200,6 +216,12 @@ cardsSection.addEventListener("click", function(e) {
     const pokemon = creatures.find(p => p.id === id);
 
     if (!pokemon) return;
+
+    if (fa_heart) {
+        fa_heart.classList.toggle("fa-regular");
+        fa_heart.classList.toggle("fa-solid");
+        return;
+    }
 
     if (e.target.closest(".btn-add-team")) {
         AfficherEquipe(pokemon);
@@ -220,22 +242,21 @@ cardsSection.addEventListener("click", function(e) {
         afficherDetail(pokemon);
     }
 });
-// État initial
-updateTeamButtons();
+
 
 // Événement du bouton fermer
-Section.addEventListener("click", function(e) {
+Section.addEventListener("click", function (e) {
 
-     if (e.target.closest(".Annule")) {
+    if (e.target.closest(".Annule")) {
         fermerDetail();
         return;
 
     }
 
     const button = e.target.closest(".btn-add-team");
-    
+
     if (!button) return;
-    
+
     const article = e.target.closest(".card");
 
     if (!article || !Section.contains(article)) return;
@@ -252,10 +273,10 @@ Section.addEventListener("click", function(e) {
         return;
     }
 
-   AfficherEquipe(pokemon);
-   updateTeamButtons();
+    AfficherEquipe(pokemon);
+    updateTeamButtons();
 
-   
+
 
 });
 
@@ -267,15 +288,43 @@ Section.addEventListener("click", function(e) {
 // (sans tenir compte des majuscules).
 // -------------------------------------------------------------
 let searchNom = document.getElementById("search");
-searchNom.addEventListener("input", function(){
-    let newTableau = creatures.filter((pokemon) => pokemon.name.toLowerCase().includes(searchNom.value.toLowerCase()));
-    section.innerHTML = "";
-    afficherPokemon(newTableau);
+searchNom.addEventListener("input", async function () {
+    showLoading();
+    hideMessage();
+    try {
+
+        if (!searchNom.value) {
+            creatures = initialcreatures;
+            hideMessage();
+            afficherPokemon(creatures);
+            updateTeamButtons();
+            return;
+        }
+        creatures = await getCreature(searchNom.value.toLowerCase());
+        if (!creatures) {
+            showMessage(" Erreur 404 : Aucune créature trouvée pour .");
+            return;
+        }
+        hideMessage();
+        afficherPokemon(creatures);
+        updateTeamButtons();
+    } catch (error) {
+        console.error("Erreur lors du chargement :", error);
+
+        if (error instanceof TypeError) {
+            showMessage("Network error! Please check your internet connection.");
+        } else {
+            showMessage("Something went wrong. Please try again.");
+        }
+        
+    } finally {
+        hideLoading();
+    }
 })
 
 let filterType = document.getElementById("filters");
 filterType.querySelector(".chip").classList.add("Active");
-filterType.addEventListener("click", function(e) {
+filterType.addEventListener("click", function (e) {
     const button = e.target.closest(".chip");
     filterType.querySelectorAll("button[type='button']").forEach(a => {
         a.classList.remove("Active");
@@ -284,15 +333,17 @@ filterType.addEventListener("click", function(e) {
     if (!button) return;
     const type = button.textContent.toLowerCase();
     if (type == "tous") {
-        section.innerHTML = "";
-        afficherPokemon(creatures) 
+
+        afficherPokemon(creatures);
+        updateTeamButtons();
         button.classList.add("Active");
         return;
 
     }
     let newTableau = creatures.filter((pokemon) => pokemon.type.toLowerCase() == type);
-    section.innerHTML = "";
+
     afficherPokemon(newTableau);
+    updateTeamButtons();
     button.classList.add("Active");
 
 });
@@ -313,27 +364,27 @@ filterType.addEventListener("click", function(e) {
 const form = document.getElementById("creature-form");
 
 // Expressions régulières
-    const regex_numero = /^#\d{3}$/;
-    const regex_nom = /^[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9 .'-]{1,29}$/;
-    const regex_statistique = /^\d{1,3}$/;
-    const regex_image = /^https:\/\/\S+\.(png|jpe?g|webp|gif)$/i;
-    const regex_description = /^[\s\S]{10,200}$/;
+const regex_numero = /^#\d{3}$/;
+const regex_nom = /^[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9 .'-]{1,29}$/;
+const regex_statistique = /^\d{1,3}$/;
+const regex_image = /^https:\/\/\S+\.(png|jpe?g|webp|gif)$/i;
+const regex_description = /^[\s\S]{10,200}$/;
 
-    // Récupération des éléments
-    const id = document.querySelector('[name="id"]');
-    const name = document.querySelector('[name="name"]');
-    const type = document.querySelector('[name="type"]');
-    const level = document.querySelector('[name="level"]');
-    const stat = document.querySelectorAll('[name="stat"]');
-    const image = document.querySelector('[name="image"]');
-    const description = document.querySelector('[name="description"]');
+// Récupération des éléments
+const id = document.querySelector('[name="id"]');
+const name = document.querySelector('[name="name"]');
+const type = document.querySelector('[name="type"]');
+const level = document.querySelector('[name="level"]');
+const stat = document.querySelectorAll('[name="stat"]');
+const image = document.querySelector('[name="image"]');
+const description = document.querySelector('[name="description"]');
 
-    const errorMessage = document.querySelectorAll(".error-message");
+const errorMessage = document.querySelectorAll(".error-message");
 
-    const button = document.querySelector('button[type="submit"]');
-    button.disabled = true;
+const button = document.querySelector('button[type="submit"]');
+button.disabled = true;
 
-form.addEventListener("input", function() {
+form.addEventListener("input", function () {
 
     let notValide = false;
 
@@ -423,7 +474,7 @@ form.addEventListener("input", function() {
     button.disabled = notValide;
 });
 
-form.addEventListener("submit", function(e) {
+form.addEventListener("submit", function (e) {
     e.preventDefault();
 
     const articles = section.querySelectorAll(".card");
@@ -436,7 +487,7 @@ form.addEventListener("submit", function(e) {
             dejaAjoute = true;
         }
     })
-    
+
 
     if (dejaAjoute) {
         alert("This Pokémon Already Exist in Page .")
@@ -469,9 +520,9 @@ form.addEventListener("submit", function(e) {
 // -------------------------------------------------------------
 
 
-function AfficherEquipe(pokemon){
+function AfficherEquipe(pokemon) {
     const section = document.getElementById("team");
-    
+
     if (!section) return;
 
     const articles = section.querySelectorAll("article");;
@@ -481,7 +532,7 @@ function AfficherEquipe(pokemon){
             dejaAjoute = true;
         }
     })
-    
+
 
     if (dejaAjoute) {
         alert("This Pokémon Already Exist in my Team .");
@@ -492,29 +543,29 @@ function AfficherEquipe(pokemon){
 
     article.className = "flex flex-col gap-3 rounded-card bg-white p-2 pb-4";
     article.dataset.id = pokemon.id;
-    
-    const typeColors = {
-    fire: "bg-red-500 text-white",
-    water: "bg-blue-500 text-white",
-    grass: "bg-green-500 text-white",
-    electric: "bg-yellow-400 text-black",
-    ice: "bg-cyan-300 text-black",
-    dark: "bg-gray-800 text-white",
-    poison: "bg-purple-500 text-white",
-    flying: "bg-sky-300 text-black",
-    bug: "bg-lime-500 text-black",
-    normal: "bg-stone-400 text-black",
-    fighting: "bg-orange-600 text-white",
-    psychic: "bg-pink-500 text-white",
-    ground: "bg-amber-600 text-white",
-    rock: "bg-yellow-700 text-white",
-    ghost: "bg-violet-800 text-white",
-    dragon: "bg-indigo-600 text-white",
-    steel: "bg-slate-400 text-black",
-    fairy: "bg-pink-300 text-black"
-};
 
-const typeColor = typeColors[pokemon.type] || "bg-gray-200 text-black";
+    const typeColors = {
+        fire: "bg-red-500 text-white",
+        water: "bg-blue-500 text-white",
+        grass: "bg-green-500 text-white",
+        electric: "bg-yellow-400 text-black",
+        ice: "bg-cyan-300 text-black",
+        dark: "bg-gray-800 text-white",
+        poison: "bg-purple-500 text-white",
+        flying: "bg-sky-300 text-black",
+        bug: "bg-lime-500 text-black",
+        normal: "bg-stone-400 text-black",
+        fighting: "bg-orange-600 text-white",
+        psychic: "bg-pink-500 text-white",
+        ground: "bg-amber-600 text-white",
+        rock: "bg-yellow-700 text-white",
+        ghost: "bg-violet-800 text-white",
+        dragon: "bg-indigo-600 text-white",
+        steel: "bg-slate-400 text-black",
+        fairy: "bg-pink-300 text-black"
+    };
+
+    const typeColor = typeColors[pokemon.type] || "bg-gray-200 text-black";
 
     article.innerHTML = `
         <div class="relative flex h-[100px] items-center justify-center rounded-xl bg-brand-light">
@@ -528,7 +579,7 @@ const typeColor = typeColors[pokemon.type] || "bg-gray-200 text-black";
         </div>`;
 
     section.append(article);
-    
+
 }
 
 function supprimerEquipe(id) {
@@ -540,13 +591,13 @@ function supprimerEquipe(id) {
 
     if (article) {
         article.remove();
-        
+
     }
 }
 
 
 
-function updateTeamButtons() {
+export function updateTeamButtons() {
     const count = team.querySelectorAll("article").length;
     const addButtons = document.querySelectorAll(".btn-add-team");
 
@@ -556,13 +607,13 @@ function updateTeamButtons() {
 }
 
 // Supprimer un Pokémon de l'équipe
-team.addEventListener("click", function(e) {
+team.addEventListener("click", function (e) {
     const button = e.target.closest(".btn-delete");
-    
+
     if (!button) return;
 
     const article = button.closest("article");
-    
+
     if (!article) return;
 
     supprimerEquipe(article.dataset.id);
@@ -580,6 +631,46 @@ team.addEventListener("click", function(e) {
 // -------------------------------------------------------------
 
 
+export function showLoading() {
+    const loader = document.getElementById("loader");
+    const cardContainer = document.getElementById("grid");
+
+    loader.classList.remove("hidden");
+    loader.classList.add("flex");
+
+    cardContainer.classList.remove("grid");
+    cardContainer.classList.add("hidden");
+};
+
+export function hideLoading() {
+    const loader = document.getElementById("loader");
+    const cardContainer = document.getElementById("grid");
+
+    loader.classList.remove("flex");
+    loader.classList.add("hidden");
+
+    cardContainer.classList.remove("hidden");
+    cardContainer.classList.add("grid");
+};
+
+export function showMessage(text) {
+    const message = document.getElementById("message");
+    const cardContainer = document.getElementById("grid");
+
+    message.textContent = text;
+    message.classList.remove("hidden");
+
+    cardContainer.innerHTML = "";
+};
+
+export function hideMessage() {
+    const message = document.getElementById("message");
+
+    message.textContent = "";
+    message.classList.add("hidden");
+};
+
 // -------------------------------------------------------------
 // BONUS : LocalStorage, Fetch API, tri, comparaison
 // -------------------------------------------------------------
+

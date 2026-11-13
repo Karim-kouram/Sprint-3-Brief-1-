@@ -29,3 +29,15 @@ button[type="submit"]:disabled {
     color: #ffffff;
     border: 1px solid #ffff;
 }
+#loadButton:disabled {
+    background-color: #9ca3af;
+    color: #e5e7eb;
+    cursor: not-allowed;
+    opacity: 0.6;
+    border: none;
+    box-shadow: none;
+}
+
+.fa-solid {
+    color: rgb(231, 15, 15);
+}
