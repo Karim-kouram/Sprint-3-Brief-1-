@@ -6,21 +6,23 @@
 // Une carte GitHub Projects et au moins un commit par fonctionnalité.
 
 
-import { chargerPokemon } from "./services/api.js"; 
-import { getCreature } from "./services/api.js"; 
+import { chargerPokemon } from "./services/api.js";
+import { getCreature } from "./services/api.js";
 
-import { initialcreatures } from "./main.js"; 
-import { creatures } from "./main.js"; 
+import { initialcreatures } from "./main.js";
+import { creatures } from "./main.js";
+import { addCreatures } from "./main.js";
+import { setCreatures } from "./main.js";
 // -------------------------------------------------------------
 // 1. afficherPokemon
 // Supprimez les cartes écrites à la main dans index.html et
 // construisez la grille à partir du tableau `creatures`.
 // -------------------------------------------------------------
-
+let favoris = JSON.parse(localStorage.getItem("favoris")) || [];
 
 let section = document.getElementById("grid");
 export function afficherPokemon(Tableau) {
-
+    
     section.innerHTML = "";
     Tableau.forEach((pokemon) => {
         const article = document.createElement("article");
@@ -61,7 +63,9 @@ export function afficherPokemon(Tableau) {
             <h3 class="font-display text-xl font-semibold">${pokemon.name}</h3>
             <span class="rounded-full px-3 py-1 text-sm font-bold ${typeColor}">${pokemon.type}</span>
           </div>
-          <p class="relative text-sm text-muted">${pokemon.level} · Total 309 <span class="absolute right-3 "><i class="fa-regular fa-heart"></i></span></p>
+          <p class="relative text-sm text-muted">${pokemon.level} · Total 309 <span class="absolute right-3 btn-favorite">
+            <i class="fa-${favoris.includes(pokemon.id) ? 'solid' : 'regular'} fa-heart"></i></span>
+          </p>
             <button type="button" class="btn-add-team btn-outline hover:bg-yellow-400 hover:text-black hover:border-red-600  hover:shadow-lg transition-all duration-300">
                 Ajouter à l'équipe
             </button>`;
@@ -86,7 +90,7 @@ loadButton.addEventListener("click", async function () {
 
     const newCreatures = await chargerPokemon(limit, skip);
 
-    creatures = [...creatures, ...newCreatures];
+    addCreatures(newCreatures);
 
     afficherPokemon(creatures);
     updateTeamButtons();
@@ -208,7 +212,7 @@ function fermerDetail() {
 cardsSection.addEventListener("click", function (e) {
     const card = e.target.closest(".card");
 
-    const fa_heart = e.target.closest(".fa-heart");
+    const fa_heart = e.target.closest(".btn-favorite");
 
     if (!card || !cardsSection.contains(card)) return;
 
@@ -218,8 +222,19 @@ cardsSection.addEventListener("click", function (e) {
     if (!pokemon) return;
 
     if (fa_heart) {
-        fa_heart.classList.toggle("fa-regular");
-        fa_heart.classList.toggle("fa-solid");
+        if (favoris.includes(id)) {
+            // Retirer des favoris
+            favoris = favoris.filter(fav => fav !== id);
+        } else {
+            // Ajouter aux favoris
+            favoris.push(id);
+        }
+
+        // Sauvegarder dans LocalStorage
+        localStorage.setItem("favoris", JSON.stringify(favoris));
+
+        // Actualiser l'affichage
+        afficherPokemon(creatures);
         return;
     }
 
@@ -289,18 +304,20 @@ Section.addEventListener("click", function (e) {
 // -------------------------------------------------------------
 let searchNom = document.getElementById("search");
 searchNom.addEventListener("input", async function () {
+    sessionStorage.setItem("lastSearch", searchNom.value);
+    console.log("Saved:", sessionStorage.getItem("lastSearch"));
     showLoading();
     hideMessage();
     try {
 
         if (!searchNom.value) {
-            creatures = initialcreatures;
+            setCreatures(initialcreatures);
             hideMessage();
             afficherPokemon(creatures);
             updateTeamButtons();
             return;
         }
-        creatures = await getCreature(searchNom.value.toLowerCase());
+        setCreatures(await getCreature(searchNom.value.toLowerCase()));
         if (!creatures) {
             showMessage(" Erreur 404 : Aucune créature trouvée pour .");
             return;
@@ -316,37 +333,62 @@ searchNom.addEventListener("input", async function () {
         } else {
             showMessage("Something went wrong. Please try again.");
         }
-        
+
     } finally {
         hideLoading();
     }
 })
 
+
 let filterType = document.getElementById("filters");
+
 filterType.querySelector(".chip").classList.add("Active");
+
 filterType.addEventListener("click", function (e) {
+
     const button = e.target.closest(".chip");
-    filterType.querySelectorAll("button[type='button']").forEach(a => {
+
+    if (!button) return;
+
+    filterType.querySelectorAll(".chip").forEach(a => {
         a.classList.remove("Active");
     });
 
-    if (!button) return;
-    const type = button.textContent.toLowerCase();
-    if (type == "tous") {
+    const type = button.textContent.trim().toLowerCase();
+
+    if (type === "favoris") {
+
+        const pokemonFavoris = creatures.filter(pokemon =>
+            favoris.includes(pokemon.id)
+        );
+
+        afficherPokemon(pokemonFavoris);
+        updateTeamButtons();
+
+        button.classList.add("Active");
+        return;
+    }
+
+    if (type === "tous") {
 
         afficherPokemon(creatures);
         updateTeamButtons();
+
         button.classList.add("Active");
         return;
-
     }
-    let newTableau = creatures.filter((pokemon) => pokemon.type.toLowerCase() == type);
+
+    const newTableau = creatures.filter(pokemon =>
+        pokemon.type.toLowerCase() === type
+    );
 
     afficherPokemon(newTableau);
     updateTeamButtons();
+
     button.classList.add("Active");
 
 });
+
 // -------------------------------------------------------------
 // 4. FILTRE
 // Les boutons de type n'affichent que les créatures de ce type ;
